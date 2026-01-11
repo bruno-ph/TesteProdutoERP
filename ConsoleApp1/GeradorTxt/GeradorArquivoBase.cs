@@ -11,8 +11,11 @@ namespace GeradorTxt
     /// IMPORTANTE: métodos NÃO marcados como virtual de propósito.
     /// O candidato deve decidir onde permitir override para suportar versões futuras.
     /// </summary>
+
     public class GeradorArquivoBase
     {
+
+        protected int[] linhasPorTipo = new int[100];
 
         public void Gerar(List<Empresa> empresas, string outputPath)
         {
@@ -22,6 +25,7 @@ namespace GeradorTxt
                 ListarEmpresa(sb, emp);
 
             }
+            ListarLinhas(sb);
             File.WriteAllText(outputPath, sb.ToString(), Encoding.UTF8);
         }
 
@@ -33,6 +37,7 @@ namespace GeradorTxt
 
         protected virtual void ListarEmpresa(StringBuilder sb,Empresa emp)
         {
+            linhasPorTipo[0] += 1;
             EscreverTipo00(sb, emp);
             foreach (var doc in emp.Documentos)
             {
@@ -42,6 +47,7 @@ namespace GeradorTxt
 
         protected virtual void ListarDocumento(StringBuilder sb, Documento doc)
         {
+            linhasPorTipo[1] += 1;
             EscreverTipo01(sb, doc);
             decimal valorDocumento = doc.Valor;
             decimal somatorioValorItens = 0m;
@@ -54,14 +60,17 @@ namespace GeradorTxt
             if (somatorioValorItens != valorDocumento)
             {
                 throw new InvalidDataException("Somatório dos valores de itens diferente do valor do " +
-                    "documento. Verifique o arquivo de entrada e tente novamente");
+                    "documento. Verifique o arquivo de entrada e tente novamente.");
             }
         }
 
         protected virtual void ListarItem(StringBuilder sb, ItemDocumento item)
         {
+            linhasPorTipo[2] += 1;
             EscreverTipo02(sb, item);
         }
+
+
 
         protected virtual void EscreverTipo00(StringBuilder sb, Empresa emp)
         {
@@ -87,6 +96,23 @@ namespace GeradorTxt
             sb.Append("02").Append("|")
               .Append(item.Descricao).Append("|")
               .Append(ToMoney(item.Valor)).AppendLine();
+        }
+
+        protected virtual void ListarLinhas(StringBuilder sb)
+        {
+            int somaLinhas = 0;
+            for (int i = 0; i < linhasPorTipo.Length; i++)
+            {
+                if (linhasPorTipo[i] > 0)
+                {
+                    sb.Append("09").Append("|")
+                    .Append(i.ToString("D2")).Append("|")
+                    .Append(linhasPorTipo[i]).AppendLine();
+                    somaLinhas += linhasPorTipo[i]+1;
+                }
+            }
+               sb.Append("99").Append("|")
+               .Append(somaLinhas+1).AppendLine();
         }
     }
 }

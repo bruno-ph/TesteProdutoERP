@@ -11,15 +11,20 @@ namespace GeradorTxt
     {
         protected override void ListarItem(StringBuilder sb, ItemDocumento item)
         {
+            linhasPorTipo[2] += 1;
             EscreverTipo02(sb, item);
-            foreach (var categoria in item.Categorias)
+            if (item.Categorias!=null)
             {
-                ListarCategoria(sb, categoria);
+                foreach (var categoria in item.Categorias)
+                {
+                    ListarCategoria(sb, categoria);
+                }
             }
         }
 
         protected virtual void ListarCategoria(StringBuilder sb, CategoriaItem categoria)
         {
+            linhasPorTipo[3] += 1;
             EscreverTipo03(sb, categoria);
         }
 
