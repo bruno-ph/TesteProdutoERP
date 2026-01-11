@@ -13,7 +13,8 @@ namespace GeradorTxt
     /// </summary>
     public class GeradorArquivoBase
     {
-        public void Gerar(List<Empresa> empresas, string outputPath)
+
+        public virtual void Gerar(List<Empresa> empresas, string outputPath)
         {
             var sb = new StringBuilder();
             foreach (var emp in empresas)
@@ -22,9 +23,18 @@ namespace GeradorTxt
                 foreach (var doc in emp.Documentos)
                 {
                     EscreverTipo01(sb, doc);
+                    decimal valorDocumento = doc.Valor;
+                    decimal somatorioValorItens = 0m;
                     foreach (var item in doc.Itens)
                     {
                         EscreverTipo02(sb, item);
+                        somatorioValorItens += item.Valor;
+                    }
+
+                    if (somatorioValorItens != valorDocumento)
+                    {
+                        throw new InvalidDataException("Somatório dos valores de itens diferente do valor do " +
+                            "documento. Verifique o arquivo de entrada e tente novamente");
                     }
                 }
             }
@@ -37,7 +47,7 @@ namespace GeradorTxt
             return val.ToString("0.00", CultureInfo.InvariantCulture);
         }
 
-        protected void EscreverTipo00(StringBuilder sb, Empresa emp)
+        protected virtual void EscreverTipo00(StringBuilder sb, Empresa emp)
         {
             // 00|CNPJEMPRESA|NOMEEMPRESA|TELEFONE
             sb.Append("00").Append("|")
@@ -46,7 +56,7 @@ namespace GeradorTxt
               .Append(emp.Telefone).AppendLine();
         }
 
-        protected void EscreverTipo01(StringBuilder sb, Documento doc)
+        protected virtual void EscreverTipo01(StringBuilder sb, Documento doc)
         {
             // 01|MODELODOCUMENTO|NUMERODOCUMENTO|VALORDOCUMENTO
             sb.Append("01").Append("|")
@@ -55,7 +65,7 @@ namespace GeradorTxt
               .Append(ToMoney(doc.Valor)).AppendLine();
         }
 
-        protected void EscreverTipo02(StringBuilder sb, ItemDocumento item)
+        protected virtual void EscreverTipo02(StringBuilder sb, ItemDocumento item)
         {
             // 02|DESCRICAOITEM|VALORITEM
             sb.Append("02").Append("|")

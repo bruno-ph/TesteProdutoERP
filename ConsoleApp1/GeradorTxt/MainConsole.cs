@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace GeradorTxt
@@ -10,6 +11,13 @@ namespace GeradorTxt
     {
         private static string _jsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "base-dados.json");
         private static string _outputDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "out");
+
+        private static Dictionary<string, Func<GeradorArquivoBase>> geradoresDeLeiaute =
+            new Dictionary<string, Func<GeradorArquivoBase>>()
+            {
+                {"1", () => new GeradorArquivoBase()},
+                {"2", () => new GeradorArquivoLeiaute2()}
+            };
 
         public static void Run()
         {
@@ -59,10 +67,19 @@ namespace GeradorTxt
                         break;
 
                     case "3":
-                        Console.Write("Gerar arquivo");
+                        Console.Write("Informe o leiaute de saÍda desejado: ");
+                        var valorLeiaute = Console.ReadLine();
+
+                        if (!geradoresDeLeiaute.ContainsKey(valorLeiaute))
+                        {
+                            Console.WriteLine("Valor fornecido não corresponde a um leiaute.");
+                            break;
+                        }
+
                         try
                         {
-                            var gerador = new GeradorArquivoBase();
+
+                            var gerador = geradoresDeLeiaute[valorLeiaute]();
 
                             var dados = JsonRepository.LoadEmpresas(_jsonPath);
 
@@ -71,7 +88,7 @@ namespace GeradorTxt
                             var fullPath = Path.Combine(_outputDir, fileName);
 
                             gerador.Gerar(dados, fullPath);
-
+                            
                             Console.WriteLine("Arquivo gerado em: " + fullPath);
                         }
                         catch (Exception ex)
