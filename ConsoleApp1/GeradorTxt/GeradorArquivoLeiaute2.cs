@@ -9,35 +9,18 @@ namespace GeradorTxt
 {
     class GeradorArquivoLeiaute2: GeradorArquivoBase
     {
-        public override void Gerar(List<Empresa> empresas, string outputPath)
+        protected override void ListarItem(StringBuilder sb, ItemDocumento item)
         {
-            var sb = new StringBuilder();
-            foreach (var emp in empresas)
+            EscreverTipo02(sb, item);
+            foreach (var categoria in item.Categorias)
             {
-                EscreverTipo00(sb, emp);
-                foreach (var doc in emp.Documentos)
-                {
-                    EscreverTipo01(sb, doc);
-                    decimal valorDocumento = doc.Valor;
-                    decimal somatorioValorItens = 0m;
-                    foreach (var item in doc.Itens)
-                    {
-                        EscreverTipo02(sb, item);
-                        somatorioValorItens += item.Valor;
-                        foreach (var categoria in item.Categorias) 
-                        {
-                            EscreverTipo03(sb, categoria);
-                        }
-                    }
-
-                    if (somatorioValorItens != valorDocumento)
-                    {
-                        throw new InvalidDataException("Somatório dos valores de itens diferente do valor do" +
-                            "documento. Verifique o arquivo de entrada e tente novamente");
-                    }
-                }
+                ListarCategoria(sb, categoria);
             }
-            File.WriteAllText(outputPath, sb.ToString(), Encoding.UTF8);
+        }
+
+        protected virtual void ListarCategoria(StringBuilder sb, CategoriaItem categoria)
+        {
+            EscreverTipo03(sb, categoria);
         }
 
         protected override void EscreverTipo02(StringBuilder sb, ItemDocumento item)

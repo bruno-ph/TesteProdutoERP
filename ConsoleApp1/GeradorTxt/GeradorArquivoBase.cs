@@ -14,29 +14,13 @@ namespace GeradorTxt
     public class GeradorArquivoBase
     {
 
-        public virtual void Gerar(List<Empresa> empresas, string outputPath)
+        public void Gerar(List<Empresa> empresas, string outputPath)
         {
             var sb = new StringBuilder();
             foreach (var emp in empresas)
             {
-                EscreverTipo00(sb, emp);
-                foreach (var doc in emp.Documentos)
-                {
-                    EscreverTipo01(sb, doc);
-                    decimal valorDocumento = doc.Valor;
-                    decimal somatorioValorItens = 0m;
-                    foreach (var item in doc.Itens)
-                    {
-                        EscreverTipo02(sb, item);
-                        somatorioValorItens += item.Valor;
-                    }
+                ListarEmpresa(sb, emp);
 
-                    if (somatorioValorItens != valorDocumento)
-                    {
-                        throw new InvalidDataException("Somatório dos valores de itens diferente do valor do " +
-                            "documento. Verifique o arquivo de entrada e tente novamente");
-                    }
-                }
             }
             File.WriteAllText(outputPath, sb.ToString(), Encoding.UTF8);
         }
@@ -45,6 +29,38 @@ namespace GeradorTxt
         {
             // Força ponto como separador decimal, conforme muitos leiautes.
             return val.ToString("0.00", CultureInfo.InvariantCulture);
+        }
+
+        protected virtual void ListarEmpresa(StringBuilder sb,Empresa emp)
+        {
+            EscreverTipo00(sb, emp);
+            foreach (var doc in emp.Documentos)
+            {
+                ListarDocumento(sb, doc);
+            }
+        }
+
+        protected virtual void ListarDocumento(StringBuilder sb, Documento doc)
+        {
+            EscreverTipo01(sb, doc);
+            decimal valorDocumento = doc.Valor;
+            decimal somatorioValorItens = 0m;
+            foreach (var item in doc.Itens)
+            {
+                ListarItem(sb, item);
+                somatorioValorItens += item.Valor;
+            }
+
+            if (somatorioValorItens != valorDocumento)
+            {
+                throw new InvalidDataException("Somatório dos valores de itens diferente do valor do " +
+                    "documento. Verifique o arquivo de entrada e tente novamente");
+            }
+        }
+
+        protected virtual void ListarItem(StringBuilder sb, ItemDocumento item)
+        {
+            EscreverTipo02(sb, item);
         }
 
         protected virtual void EscreverTipo00(StringBuilder sb, Empresa emp)
